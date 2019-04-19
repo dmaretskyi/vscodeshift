@@ -3,6 +3,7 @@
 	"displayName": "vscodeshift",
 	"description": "JsCodeShift support from VsCode",
 	"version": "0.0.1",
+	"publisher": "marik",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
@@ -14,12 +15,10 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "extension.codemod",
-				"title": "Codemod"
-			}
-		]
+		"commands": [{
+			"command": "extension.codemod",
+			"title": "Codemod"
+		}]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
