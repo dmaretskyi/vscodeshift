@@ -4,11 +4,10 @@ Adds support to run [jscodeshift](https://github.com/facebook/jscodeshift) codem
 
 ## Features
 
-> Compatible with [jscodeshift](https://github.com/facebook/jscodeshift) codemode scripts.
-
 - Run codemods on your current file with a `Codemod` command
-- ~~Select available codemod to run~~
-- ~~Configure codemod directory~~
+- ~~Configure codemod directory in your workspace~~
+- ~~Show change diff before applying codemod~~
+- ~~Pass selection from the editor to codemods~~
 
 ### For more information
 
