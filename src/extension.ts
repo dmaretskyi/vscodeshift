@@ -80,6 +80,7 @@ async function execCodemod(
   fileInfo: jscodeshift.FileInfo
 ): Promise<string | null> {
   const withParser = jscodeshift.withParser("tsx");
+  delete require.cache[require.resolve(path)];
   const transformer = require(path);
 
   try {
