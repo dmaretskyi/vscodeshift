@@ -5,6 +5,8 @@ import { join } from "path";
 import { promisify } from "util";
 
 export function activate(context: vscode.ExtensionContext) {
+  require("ts-node").register();
+
   let disposable = vscode.commands.registerCommand(
     "extension.codemod",
     async () => {
@@ -81,7 +83,9 @@ async function execCodemod(
 ): Promise<string | null> {
   const withParser = jscodeshift.withParser("tsx");
   delete require.cache[require.resolve(path)];
-  const transformer = require(path);
+  const module = require(path);
+
+  const transformer = module.default || module;
 
   try {
     return transformer(fileInfo, {

@@ -15,10 +15,12 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [{
-			"command": "extension.codemod",
-			"title": "Codemod"
-		}]
+		"commands": [
+			{
+				"command": "extension.codemod",
+				"title": "Codemod"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
@@ -36,6 +38,7 @@
 	},
 	"dependencies": {
 		"@types/jscodeshift": "^0.6.0",
-		"jscodeshift": "^0.6.3"
+		"jscodeshift": "^0.6.3",
+		"ts-node": "^8.1.0"
 	}
 }
