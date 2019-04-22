@@ -20,33 +20,31 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "extension.codemod",
     async () => {
-      console.log("Starting codemod command");
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        console.warn("no active editor");
-        return;
-      }
+      console.log("Activating codemod command");
       try {
-        const source = editor.document.getText();
         const codemods = await enumerateCodemods();
         if (codemods.length === 0) {
           vscode.window.showInformationMessage("No codemods were found");
           return;
         }
+
         const selection = await showSelectionMenu(codemods);
-        if (!selection || selection.length === 0) {
+        if (!selection) {
           vscode.window.showInformationMessage("No selection");
           return;
         }
-        const codemodPath = join(
-          vscode.workspace.rootPath!,
-          "codemods",
-          selection
-        );
 
         try {
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) {
+            console.warn("No active editor");
+            return;
+          }
+
+          const source = editor.document.getText();
+
           const res = await execCodemod(
-            codemodPath,
+            selection.fsPath,
             {
               source,
               path: editor.document.fileName
@@ -54,11 +52,11 @@ export function activate(context: vscode.ExtensionContext) {
             editor.selection.start
           );
 
-          if (res) {
-            await replaceBuffer(res);
-          } else {
+          if (!res) {
             vscode.window.showInformationMessage("File skipped");
+            return;
           }
+          await replaceBuffer(res);
         } catch (err) {
           vscode.window.showErrorMessage(
             `Transform error:\n${err.message}\n${err.stack}`
@@ -89,18 +87,18 @@ async function replaceBuffer(res: string) {
 export function deactivate() {}
 
 async function enumerateCodemods() {
-  if (!vscode.workspace.rootPath) {
-    return [];
+  if (
+    !vscode.workspace.workspaceFolders ||
+    vscode.workspace.workspaceFolders.length === 0
+  ) {
+    throw new Error("Must be used in workspace");
   }
-  try {
-    const files = await promisify(readdir)(getCodemodsDir()!);
-    return files;
-  } catch (err) {
-    vscode.window.showErrorMessage(
-      `Could not enumerate codemods:\n${err.message}`
-    );
-    return [];
-  }
+  return vscode.workspace.findFiles(
+    new vscode.RelativePattern(
+      vscode.workspace.workspaceFolders[0],
+      "codemods/**/*.cm.[tj]s"
+    )
+  );
 }
 
 async function execCodemod(
@@ -108,6 +106,7 @@ async function execCodemod(
   fileInfo: jscodeshift.FileInfo,
   position?: vscode.Position
 ): Promise<string | null> {
+  console.log("Starting codemod", path);
   const withParser = jscodeshift.withParser("tsx");
 
   for (const cacheKey of Object.keys(require.cache)) {
@@ -136,8 +135,14 @@ async function execCodemod(
   return res;
 }
 
-async function showSelectionMenu(codemods: string[]) {
-  return vscode.window.showQuickPick(codemods);
+async function showSelectionMenu(codemods: vscode.Uri[]) {
+  const pick = await vscode.window.showQuickPick(
+    codemods.map(uri => ({
+      uri,
+      label: uri.fsPath
+    }))
+  );
+  return pick && pick.uri;
 }
 
 function getCodemodsDir() {
