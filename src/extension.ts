@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import * as jscodeshift from "jscodeshift";
-import { readdir } from "fs";
-import { join, dirname } from "path";
-import { promisify } from "util";
+import { join, dirname, basename } from "path";
 import { register } from "ts-node";
+
+const CODEMOD_GLOB = "codemods/**/*.cm.[tj]s";
 
 export function activate(context: vscode.ExtensionContext) {
   register({
@@ -96,7 +96,7 @@ async function enumerateCodemods() {
   return vscode.workspace.findFiles(
     new vscode.RelativePattern(
       vscode.workspace.workspaceFolders[0],
-      "codemods/**/*.cm.[tj]s"
+      CODEMOD_GLOB
     )
   );
 }
@@ -139,7 +139,7 @@ async function showSelectionMenu(codemods: vscode.Uri[]) {
   const pick = await vscode.window.showQuickPick(
     codemods.map(uri => ({
       uri,
-      label: uri.fsPath
+      label: basename(uri.fsPath)
     }))
   );
   return pick && pick.uri;
